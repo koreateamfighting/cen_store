@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TabBarMenu extends StatefulWidget {
   final List<String> mainTabs = [
-    'props',
+    'prop',
     '3D Human',
     'Scene',
     'AI Model',
@@ -32,116 +33,147 @@ class TabBarMenu extends StatefulWidget {
 
 class _TabBarMenuState extends State<TabBarMenu> {
   String? hoveredTab;
+  Timer? _exitTimer;
+
+  void _onMainTabExit() {
+    _exitTimer = Timer(Duration(milliseconds: 10000), () {
+      if (hoveredTab != null && widget.selectedTab == hoveredTab) {
+        setState(() {
+          hoveredTab = null;
+          widget.onTabSelected(null);
+        });
+      }
+    });
+  }
+
+  void _cancelExitTimer() {
+    if (_exitTimer?.isActive ?? false) {
+      _exitTimer?.cancel();
+    }
+  }
+
+  void dispose(){
+    _exitTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        MouseRegion(
-          onExit: (_) {
-            widget.onTabSelected(null);
-            widget.onSubTabHover(null);
-            setState(() {
-              hoveredTab = null;
-            });
-          },
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+    return Container(
+       // height: 80,
+        child: Column(
+          children: [
+            MouseRegion(
+              onEnter: (_) => _cancelExitTimer(), // Timer 취소
+              onExit: (_) => _onMainTabExit(), // Timer 시작
+              child: Column(
                 children: [
-                  Spacer(), // Left spacer
-                  ...widget.mainTabs.expand((tab) {
-                    final bool isHovered = hoveredTab == tab;
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 410),
+                      ...widget.mainTabs.expand((tab) {
+                        final bool isHovered = hoveredTab == tab;
 
-                    return [
-                      GestureDetector(
-                        onTap: () {
-                          widget.onTabSelected(tab);
-                        },
-                        child: MouseRegion(
-                          onEnter: (_) {
-                            setState(() {
-                              hoveredTab = tab;
-                            });
-                            widget.onTabSelected(tab);
-                          },
-                          onExit: (_) {
-                            setState(() {
-                              hoveredTab = null;
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 18),
-                            decoration: BoxDecoration(
-                              color:
-                                  isHovered ? Colors.black : Colors.transparent,
-                              borderRadius: BorderRadius.circular(4),
+                        return [
+                          GestureDetector(
+                            onTap: () {
+                              widget.onTabSelected(tab);
+                            },
+                            child: MouseRegion(
+                              onEnter: (_) {
+                                _cancelExitTimer();
+                                setState(() {
+                                  hoveredTab = tab;
+                                });
+                                widget.onTabSelected(tab);
+                              },
+                              onExit: (_) {
+                                _onMainTabExit();
+                              },
+                              child: Container(
+                                width: 100,
+                                height: 40,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: isHovered
+                                      ? Colors.black
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  tab,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.notoSansGothic(
+                                      textStyle: TextStyle(
+                                    color:
+                                        isHovered ? Colors.blue : Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              tab,
-                              style: GoogleFonts.notoSansGothic(
-                                  textStyle: TextStyle(
-                                color: isHovered ? Colors.blue : Colors.black,
-                                fontSize: 16, // 글씨 크기 증가
-                                fontWeight:
-                                    FontWeight.bold
-
-                              )),
-                            ),
-
-                            // Text(
-                            //     "Company",
-                            //     style :GoogleFonts.poppins(textStyle:TextStyle(color: Colors.white, fontSize: isMobile? 30:width * 0.023), )
-                            // ),
                           ),
+                        ];
+                      }).toList(),
+                      Spacer(),
+                      Spacer(),
+                    ],
+                  ),
+                  if (widget.selectedTab != null &&
+                      widget.subTabs.containsKey(widget.selectedTab))
+                    MouseRegion(
+                      onEnter: (_) {
+                        _cancelExitTimer();
+                        setState(() {
+                          hoveredTab = widget.selectedTab;
+                        });
+                      },
+                      onExit: (_) => _onMainTabExit(),
+                      child: Container(
+                        height: 40,
+                        color: Colors.black,
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children:
+                              widget.subTabs[widget.selectedTab]!.map((subTab) {
+                            return MouseRegion(
+                              onEnter: (_) {
+                                widget.onSubTabHover(subTab);
+                                _cancelExitTimer();
+                              },
+                              onExit: (_) {
+                                widget.onSubTabHover(null);
+                                _onMainTabExit();
+                              },
+                              child: GestureDetector(
+                                onTap: () {
+                                  print("Selected sub-tab: $subTab");
+                                },
+                                child: Text(
+                                  subTab,
+                                  style: TextStyle(
+                                    color: widget.hoveredSubTab == subTab
+                                        ? Colors.blue
+                                        : Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
-                      SizedBox(width: 34), // 탭 항목 사이 간격 추가
-                    ];
-                  }).toList(),
-                  Spacer(), // Right spacer 1
-                  Spacer(), // Right spacer 2
+                    ),
                 ],
               ),
-              if (widget.selectedTab != null &&
-                  widget.subTabs.containsKey(widget.selectedTab))
-                Container(
-                  color: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: widget.subTabs[widget.selectedTab]!.map((subTab) {
-                      return MouseRegion(
-                        onEnter: (_) {
-                          widget.onSubTabHover(subTab);
-                        },
-                        onExit: (_) {
-                          widget.onSubTabHover(null);
-                        },
-                        child: GestureDetector(
-                          onTap: () {
-                            print("Selected sub-tab: $subTab");
-                          },
-                          child: Text(
-                            subTab,
-                            style: TextStyle(
-                              color: widget.hoveredSubTab == subTab
-                                  ? Colors.blue
-                                  : Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
+            ),
+          ],
+        ));
   }
+
+
 }

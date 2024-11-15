@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cen_store_webpage/widget/hover_icon_with_tooltip.dart';
 import 'package:cen_store_webpage/widget/tab_bar_menu.dart';
 import 'package:cen_store_webpage/screen/home_screen_content.dart';
+import 'package:cen_store_webpage/widget/app_bar_widget.dart';
+
 
 
 class CENStoreApp extends StatefulWidget {
@@ -13,8 +15,11 @@ class _CENStoreAppState extends State<CENStoreApp> {
   String? selectedTab;
   String? hoveredSubTab;
 
+
+
+
   final Map<String, List<String>> subTabs = {
-    'props': ['Prop', 'Plants', 'Animation', 'Buildings', 'Scanned Data', 'Environment'],
+    'prop': ['Prop', 'Plants', 'Animation', 'Buildings', 'Scanned Data', 'Environment'],
     '3D Human': ['ADAM Template', 'Animation', 'Accessories'],
     'Scene': ['Realistic\nEnvironment', 'CEN FREE\nEnvironment', 'Fantasy\nEnvironment'],
     'AI Model': ['Real Data Basis', 'Synthetic Data Basis', 'Overall'],
@@ -26,55 +31,13 @@ class _CENStoreAppState extends State<CENStoreApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(56),
-          child: AppBar(
-            backgroundColor: Colors.black,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Spacer(),
-                Image.asset('assets/images/cenCloudLogo.png', height: 40),
-                Spacer(),
-                Spacer(),
-                Row(
-                  children: [
-                    HoverIconWithTooltip(
-                      defaultIcon: 'assets/images/myAssetWhiteIcon.png',
-                      hoverIcon: 'assets/images/myAssetWhiteIcon.png',
-                      tooltip: 'MyAsset',
-                      onPressed: () {},
-                    ),
-                    HoverIconWithTooltip(
-                      defaultIcon: 'assets/images/bucketIcon.png',
-                      hoverIcon: 'assets/images/bucketHoverIcon.png',
-                      tooltip: 'Cart',
-                      onPressed: () {},
-                    ),
-                    HoverIconWithTooltip(
-                      defaultIcon: 'assets/images/favoriteIcon.png',
-                      hoverIcon: 'assets/images/favoriteHoverIcon.png',
-                      tooltip: 'Saved',
-                      onPressed: () {},
-                    ),
-                    HoverIconWithTooltip(
-                      defaultIcon: 'assets/images/mypageIcon.png',
-                      hoverIcon: 'assets/images/mypageHoverIcon.png',
-                      tooltip: 'MyPage',
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-                Spacer(),
-              ],
-            ),
-          ),
-        ),
+        appBar: AppBarWidget(), // 변경된 AppBarWidget 사용
         body: Stack(
           children: [
             // HomeScreenContent (배경 이미지 및 메인 콘텐츠)
             Positioned.fill(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: HomeScreenContent(),
@@ -82,15 +45,22 @@ class _CENStoreAppState extends State<CENStoreApp> {
                 ],
               ),
             ),
-
             // TabBarMenu를 화면 상단에 고정
             Positioned(
               top: 0, // 원하는 위치로 조정 가능
               left: 0,
               right: 0,
               child: Container(
-                height: 60,
-                color: Colors.white,
+
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.black.withOpacity(0.5), // 선 색상
+                      width: 1.0,         // 선 두께
+                    ),
+                  ),
+                ),
                 child: TabBarMenu(
                   subTabs: subTabs,
                   selectedTab: selectedTab,
@@ -106,19 +76,11 @@ class _CENStoreAppState extends State<CENStoreApp> {
                     });
                   },
                 ),
-              ),
+              )
+              ,
             ),
 
-            // Divider로 TabBarMenu와 HomeScreenContent의 분리선
-            Positioned(
-              top: 60,
-              left: 0,
-              right: 0,
-              child: Divider(
-                color: Colors.black,
-                height: 2,
-              ),
-            ),
+
           ],
         ),
       ),
